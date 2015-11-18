@@ -15,7 +15,16 @@
  
  	[ ! "$INPUTFILE" ] && exit
  	SHORTCUT='TRUE'
-@@ -293,21 +290,21 @@ fi
+@@ -245,6 +242,8 @@ then
+ 	)
+ 
+ else
++	# EXEs are the norm on Cygwin, not the exception
++	exit
+ 	# Just use the generic icon with backgroud color based on md5sum:
+ 	HUE=$(md5sum "$INPUTFILE" | cut -c 1-2)
+ 	HUE=$(printf "%d" 0x$HUE)
+@@ -293,21 +292,21 @@ fi
  if [[ ${INPUTFILE##*.} = 'msi' ]]
  then
  	# Look for the ProductVersion property if user has the Microsoft (R) Windows Script Host installed:
