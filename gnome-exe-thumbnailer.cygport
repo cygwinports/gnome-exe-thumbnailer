@@ -1,0 +1,24 @@
+NAME="gnome-exe-thumbnailer"
+VERSION=0.9.3
+RELEASE=1
+CATEGORY="GNOME"
+SUMMARY="Thumbnailer for Windows EXEs, DLLs, MSIs, and shortcuts"
+DESCRIPTION=${SUMMARY}
+HOMEPAGE="http://wiki.winehq.org/exe-thumbnailer"
+SRC_URI="https://launchpad.net/ubuntu/+archive/primary/+files/gnome-exe-thumbnailer_${VERSION}.orig.tar.gz"
+PATCH_URI="0.9.3-cygwin.patch"
+
+ARCH=noarch
+
+REQUIRES="cygutils ImageMagick icoutils libiconv"
+
+src_compile() { :; }
+
+src_install() {
+	cd ${S}
+	dobin usr/bin/${NAME}
+	insinto /usr/share/thumbnailers
+	doins usr/share/thumbnailers/*.thumbnailer
+	dodir /usr/share/pixmaps/
+	cp -pR usr/share/pixmaps/${NAME} ${D}/usr/share/pixmaps/
+}

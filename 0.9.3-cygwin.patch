@@ -1,0 +1,43 @@
+--- origsrc/gnome-exe-thumbnailer-0.9.3/usr/bin/gnome-exe-thumbnailer	2013-10-30 04:22:33.000000000 -0500
++++ src/gnome-exe-thumbnailer-0.9.3/usr/bin/gnome-exe-thumbnailer	2015-11-17 19:28:40.434704800 -0600
+@@ -8,12 +8,9 @@ OUTPUTFILE="$2"
+ # application/x-ms-shortcut (.lnk) support, thanks to jopka (https://launchpad.net/~jopka)
+ if [[ ${INPUTFILE##*.} = 'lnk' ]]
+ then
+-	which winepath >&2 || exit
++	which readshortcut >&2 || exit
+ 
+-	INPUTFILE="$(
+-		winepath -u "$(winedump "$INPUTFILE" \
+-		| sed -n -r '/^LocalPath of/s/.*\("(.*\.[Ee][Xx][Ee])"\)$/\1/p')"
+-	)"
++	INPUTFILE=$(readshortcut -u "$INPUTFILE")
+ 
+ 	[ ! "$INPUTFILE" ] && exit
+ 	SHORTCUT='TRUE'
+@@ -293,21 +290,21 @@ fi
+ if [[ ${INPUTFILE##*.} = 'msi' ]]
+ then
+ 	# Look for the ProductVersion property if user has the Microsoft (R) Windows Script Host installed:
+-	if which wine && grep -v 'Wine placeholder DLL' $HOME/.wine/drive_c/windows/system32/cscript.exe
++	if which cscript.exe
+ 	then
+ 		# Workaround wine bug #19799: cscript crashes if you call WScript.Arguments(0)
+ 		# http://bugs.winehq.org/show_bug.cgi?id=19799
+ 		<<< "
+ 			Dim WI, DB, View, Record
+ 			Set WI = CreateObject(\"WindowsInstaller.Installer\")
+-			Set DB = WI.OpenDatabase(\"$INPUTFILE\",0)
++			Set DB = WI.OpenDatabase(\"$(cygpath -w $INPUTFILE)\",0)
+ 			Set View = DB.OpenView(\"SELECT Value FROM Property WHERE Property = 'ProductVersion'\")
+ 			View.Execute
+ 			Wscript.Echo View.Fetch.StringData(1)
+-		" iconv -f utf8 -t unicode > $TEMPFILE1.vbs
++		" iconv -f utf8 -t utf16le > $TEMPFILE1.vbs
+ 
+ 		VERSION=$(
+-			DISPLAY=NONE wine cscript.exe //E:vbs //NoLogo Z:\\tmp\\${TEMPFILE1##*/}.vbs 2>/dev/null \
++			DISPLAY=NONE cscript.exe //E:vbs //NoLogo $(cygpath -w ${TEMPFILE1}.vbs) 2>/dev/null \
+ 			| egrep -o '^[0-9]+\.[0-9]+(\.[0-9][0-9]?)?(beta)?'
+ 		)
+ 
